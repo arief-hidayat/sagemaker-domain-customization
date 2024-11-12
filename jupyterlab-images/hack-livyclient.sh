@@ -12,7 +12,6 @@ sparkmagic_location=$(pip show sparkmagic | grep "Location:" | cut -d " " -f 2)
 # Construct the full path to the command.py file
 file_path="${sparkmagic_location}/sparkmagic/livyclientlib/command.py"
 
-
 # Check if the file exists
 if [ -f "$file_path" ]; then
     # Create a backup of the original file
