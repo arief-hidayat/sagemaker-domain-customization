@@ -60,8 +60,9 @@ aws --profile cgk-sso sagemaker update-domain \
 ```
 
 With above setup, you should be able to see this custom image in drop down selection in your JupyterLab Space.
+![set-jupyterlab-image](../imgs/jupyterlab-img-01-set-in-space.jpg)
 
 You can then use the [tar-pip.sh](./tar-pip.sh) from terminal or kernel.
 
 Example of generating tar file from `test.txt` which contains python requirements.
-![tar-pip](../imgs/tar-pip-01.jpg)
+![tar-pip](../imgs/jupyterlab-img-02-tar-pip-01.jpg)
