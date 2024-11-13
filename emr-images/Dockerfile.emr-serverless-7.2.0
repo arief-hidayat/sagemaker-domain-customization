@@ -1,0 +1,13 @@
+# Dockerfile
+FROM public.ecr.aws/emr-serverless/spark/emr-7.2.0:latest
+
+USER root
+# MODIFICATIONS GO HERE
+RUN curl -O --output-dir $SPARK_HOME/jars https://repo1.maven.org/maven2/net/snowflake/spark-snowflake_2.13/3.0.0/spark-snowflake_2.13-3.0.0.jar
+RUN curl -O --output-dir $SPARK_HOME/jars https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/3.17.0/snowflake-jdbc-3.17.0.jar
+
+# EMRS will run the image as hadoop
+USER hadoop:hadoop
+
+# docker build -f Dockerfile.emr-serverless-7.2.0 -t ariefhidayat/emr-serverless-spark:7.2.0 .
+# docker push ariefhidayat/emr-serverless-spark:7.2.0
