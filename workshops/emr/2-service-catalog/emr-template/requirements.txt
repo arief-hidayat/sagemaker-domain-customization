@@ -1,0 +1,23 @@
+# Data processing libraries
+pandas==1.5.3
+numpy==1.24.3
+scipy==1.10.1
+
+# Machine Learning libraries
+scikit-learn==1.2.2
+xgboost==1.7.5
+#lightgbm==3.3.5
+
+# Data visualization
+matplotlib>=3.5.0
+python-dateutil>=2.7.0
+#seaborn==0.12.2
+
+# AWS specific
+boto3==1.26.137
+#awswrangler==3.0.0
+
+# Jupyter extensions
+#jupyter-contrib-nbextensions==0.7.0
+
+

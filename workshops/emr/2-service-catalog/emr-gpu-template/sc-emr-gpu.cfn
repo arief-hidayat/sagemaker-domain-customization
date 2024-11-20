@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EMR cluster with custom Python dependencies
+
+Parameters:
+  SageMakerProjectName:
+    Type: String
+    Description: Name of the SageMaker Project
+    MinLength: 1
+    MaxLength: 32
+    AllowedPattern: ^[a-zA-Z0-9](-*[a-zA-Z0-9])*$
+
+  SageMakerProjectId:
+    Type: String
+    Description: ID of the SageMaker Project
+    MinLength: 1
+    MaxLength: 32
+
+  ClusterName:
+    Type: String
+    Default: "EMR-Cluster-GPU"
+    Description: Name of the EMR cluster
+  
+  EMRRelease:
+    Type: String
+    Default: "emr-7.3.0"
+    Description: EMR release version
+    AllowedValues:
+      - "emr-6.15.0"
+      - "emr-7.2.0"
+      - "emr-7.3.0"
+  
+  InstanceType:
+    Type: String
+    Default: "g5.xlarge"
+    Description: EC2 instance type for the cluster nodes
+    AllowedValues:
+      - "g5.xlarge"
+      - "g5.2xlarge"
+      - "g5.4xlarge"
+  
+  InstanceCount:
+    Type: Number
+    Default: 3
+    MinValue: 1
+    MaxValue: 20
+    Description: Number of instances in the cluster
+  
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: VPC Subnet ID for the EMR cluster
+  
+  RequirementsTxtS3Location:
+    Type: String
+    Description: S3 location of the requirements.txt file
+    AllowedPattern: "^s3://[a-z0-9][a-z0-9.-]*[a-z0-9](/.*)?$"
+  
+  BootstrapScriptS3Location:
+    Type: String
+    Description: S3 location of the bootstrap script
+    AllowedPattern: "^s3://[a-z0-9][a-z0-9.-]*[a-z0-9](/.*)?$"
+
+Resources:
+  EMRCluster:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      ReleaseLabel: !Ref EMRRelease
+      Applications:
+        - Name: Spark
+        - Name: Hadoop
+        - Name: Livy
+        - Name: JupyterEnterpriseGateway
+      VisibleToAllUsers: true
+      Instances:
+        Ec2SubnetId: !Ref SubnetId
+        EmrManagedMasterSecurityGroup: sg-08a1bcc5461d9025a
+        EmrManagedSlaveSecurityGroup: sg-08a1bcc5461d9025a
+        TerminationProtected: false
+        MasterInstanceGroup:
+          InstanceCount: 1
+          InstanceType: !Ref InstanceType
+          Market: ON_DEMAND
+          Name: Master
+        CoreInstanceGroup:
+          InstanceCount: !Ref InstanceCount
+          InstanceType: !Ref InstanceType
+          Market: ON_DEMAND
+          Name: Core
+      BootstrapActions:
+        - Name: InstallPythonDependencies
+          ScriptBootstrapAction:
+            Path: !Ref BootstrapScriptS3Location
+            Args:
+              - !Ref RequirementsTxtS3Location
+        - Name: InstallRAPIDS
+          ScriptBootstrapAction:
+            Path: "s3://emr-test-117019135262/xldemo/service-catalog/bootstrap-rapids-script.sh"
+      Tags:
+        - Key: Environment
+          Value: Development
+      JobFlowRole: EMR_EC2_DefaultRole
+      ServiceRole: EMR_DefaultRole
+      LogUri: !Sub "s3://aws-logs-${AWS::AccountId}-${AWS::Region}/elasticmapreduce/"
+
+Outputs:
+  ClusterId:
+    Description: EMR Cluster ID
+    Value: !Ref EMRCluster
+  
+  MasterPublicDNS:
+    Description: Master node public DNS
+    Value: !GetAtt EMRCluster.MasterPublicDNS
