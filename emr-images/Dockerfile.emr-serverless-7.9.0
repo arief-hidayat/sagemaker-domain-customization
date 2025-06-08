@@ -1,0 +1,19 @@
+# https://gallery.ecr.aws/emr-serverless/spark/emr-7.9.0
+FROM public.ecr.aws/emr-serverless/spark/emr-7.9.0:20250425
+
+USER root
+# MODIFICATIONS GO HERE
+
+# UPGRADING PYTHON
+RUN dnf install python3.11 python3.11-pip
+WORKDIR /home/hadoop
+ENV PYSPARK_PYTHON=/usr/bin/python3.11
+# INSTALL PACKAGES, as per your requirements
+RUN python3.11 -m pip install cython numpy matplotlib requests boto3 pandas great_expectations plotly dash scipy
+
+# EMRS will run the image as hadoop
+USER hadoop:hadoop
+
+# docker build -f Dockerfile.emr-serverless-7.9.0 -t ariefhidayat/emr-serverless-spark:7.9.0 .
+# docker push ariefhidayat/emr-serverless-spark:7.9.0
+# docker buildx build --platform linux/arm64/v8,linux/amd64 -f Dockerfile.emr-serverless-7.9.0 -t ariefhidayat/emr-serverless-spark:7.9.0 .
