@@ -1,0 +1,27 @@
+FROM public.ecr.aws/sagemaker/sagemaker-distribution:3.1.0-cpu
+
+ARG NB_USER="sagemaker-user"
+ARG NB_UID=1000
+ARG NB_GID=100
+
+ENV MAMBA_USER=$NB_USER
+
+USER root
+# install amazon Q CLI
+RUN apt-get update
+RUN apt-get install -y libayatana-appindicator3-1 libwebkit2gtk-4.1-0 libgtk-3-0
+RUN wget https://desktop-release.q.us-east-1.amazonaws.com/latest/amazon-q.deb
+RUN apt-get install -f
+RUN dpkg -i amazon-q.deb
+
+# RUN apt-get update
+# RUN apt-get install -y curl unzip libayatana-appindicator3-1 libwebkit2gtk-4.1-0 libgtk-3-0
+# RUN curl --proto '=https' --tlsv1.2 -sSf "https://desktop-release.q.us-east-1.amazonaws.com/latest/q-x86_64-linux.zip" -o "q.zip"
+# RUN unzip q.zip && ./q/install.sh && rm -rf ./q
+USER $MAMBA_USER
+
+ENTRYPOINT ["jupyter-lab"]
+CMD ["--ServerApp.ip=0.0.0.0", "--ServerApp.port=8888", "--ServerApp.allow_origin=*", "--ServerApp.token=''", "--ServerApp.base_url=/jupyterlab/default"]
+
+# docker build -f Dockerfile.jupyterlab-with-q -t ariefhidayat/sagemaker/sagemaker-distribution:3.1.0-q-cpu .
+

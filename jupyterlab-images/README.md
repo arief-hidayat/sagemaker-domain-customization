@@ -9,13 +9,19 @@ What I would like to achieve here:
 ### Build image
 
 ```bash
-docker build -f Dockerfile.jupyterlab -t ariefhidayat/sagemaker-distribution:2.1.0-cpu .
-docker push ariefhidayat/sagemaker-distribution:2.1.0-cpu
+export REPO_NAME=sagemaker/sagemaker-distribution
+export AWS_REGION=ap-southeast-3
+export REPO_URI=$(aws --region $AWS_REGION ecr describe-repositories --repository-name $REPO_NAME | jq -r '.repositories[0].repositoryUri')
+export IMG_TAG=3.1.0-cpu-with-q
+# export IMG_TAG=2.1.0-cpu
+image_uri=${REPO_URI}:$IMG_TAG
+echo $image_uri
+docker build -f Dockerfile.jupyterlab-$IMG_TAG -t $image_uri .
 ```
 
 ### Manually Test image
 ```bash
-docker run --rm -it --entrypoint /bin/bash ariefhidayat/sagemaker-distribution:2.1.0-cpu
+docker run --rm -it --entrypoint /bin/bash $image_uri
 ```
 
 ### Using the image in Sagemaker
@@ -27,8 +33,7 @@ Please refer to
 Make sure to add IAM permissions to list the sagemaker images to the role.
 ```bash
 # push image to your ECR
-image_uri=your-aws-account-id.dkr.ecr.ap-southeast-3.amazonaws.com/sagemaker/sagemaker-distribution:2.1.0-cpu
-docker tag ariefhidayat/sagemaker-distribution:2.1.0-cpu $image_uri
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPO_URI
 docker push $image_uri
 
 # create Sagemaker app image config
@@ -36,22 +41,25 @@ aws sagemaker create-app-image-config --app-image-config-name default-jupyterlab
 app_image_config_arn=$(aws sagemaker describe-app-image-config --app-image-config-name default-jupyterlab | jq -r .AppImageConfigArn)
 echo $app_image_config_arn
 
-# create Sagemaker image
+# create Sagemaker image. change domain id
 domain_id=d-xxx
+image_name=aht-sagemaker-${IMG_TAG}
+echo $image_name
 role_arn=$(aws sagemaker describe-domain --domain-id $domain_id | jq -r .DefaultSpaceSettings.ExecutionRole)
-aws --profile cgk-sso sagemaker create-image --image-name aht-sagemaker-dist-2.1.0 --role-arn $role_arn
+aws sagemaker create-image --image-name $image_name --role-arn $role_arn
 # create Sagemaker image version
-aws --profile cgk-sso sagemaker create-image-version --image-name aht-sagemaker-dist-2.1.0 \
+aws sagemaker create-image-version --image-name $image_name \
   --base-image $image_uri
+aws sagemaker describe-image-version  --image-name $image_name 
 
-# update domain. set custom image for JupyterLabApp.
-aws --profile cgk-sso sagemaker update-domain \
+# update domain. set custom image for JupyterLabApp. rename ImageName below
+aws sagemaker update-domain \
     --domain-id $domain_id \
     --default-user-settings '{
         "JupyterLabAppSettings": {
             "CustomImages": [
                 {
-                    "ImageName": "aht-sagemaker-dist-2.1.0",
+                    "ImageName": "aht-sagemaker-3.1.0-cpu-with-q",
                     "AppImageConfigName": "default-jupyterlab"
                 }
             ]
