@@ -211,7 +211,12 @@ Just need to add one cell on top to connect to EMR, e.g.
 %sm_analytics emr-serverless connect --application-id $EMR_APP_ID --language python --emr-execution-role-arn $EMR_EXECUTION_ROLE_ARN
 ```
 
-In case needed, you can configure sparkmagic configuration, e.g.
+#### Tips
+
+* In case needed, you can configure sparkmagic configuration, e.g.
 ```
 echo '{"livy_session_startup_timeout_seconds": 180}' > ~/.sparkmagic/config.json
 ```
+* if you are using older EMR serverless image e.g. `public.ecr.aws/emr-serverless/spark/emr-7.5.0` and would like to upgrade python to 3.11, please refer to `# FIX LIVY ISSUE FOR PYTHON 3.10 OR NEWER` in this [page](../workshops/emr/4-emr-serverless-image/readme.md)
+* some tips on [Notebook Configuration for EMR Serverless](../workshops/emr/5-emr-serverless-notebook-config/readme.md)
+
