@@ -17,7 +17,7 @@ RUN dpkg -i amazon-q.deb
 USER $MAMBA_USER
 
 # e.g. if you need to modify sparkmagic config
-# RUN echo echo '{"livy_session_startup_timeout_seconds": 180}' > ~/.sparkmagic/config.json
+# RUN echo '{"livy_session_startup_timeout_seconds": 180}' > ~/.sparkmagic/config.json
 
 ENTRYPOINT ["jupyter-lab"]
 CMD ["--ServerApp.ip=0.0.0.0", "--ServerApp.port=8888", "--ServerApp.allow_origin=*", "--ServerApp.token=''", "--ServerApp.base_url=/jupyterlab/default"]

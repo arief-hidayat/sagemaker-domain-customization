@@ -2,14 +2,14 @@
 
 In this section, we would like to create custom image that we will use in Sagemaker JupyterLab space
 
-For [Dockerfile.jupyterlab-2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu)
-* extend specific sagemaker jupyterlab image
+For [Dockerfile.jupyterlab-2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu):
+* extend `public.ecr.aws/sagemaker/sagemaker-distribution:2.1.0-cpu`
 * update libraries `jupyter-collaboration==3.0.0 jupyter_ydoc==3.0.0` in attempt to fix [this issue](https://github.com/jupyterlab/jupyter-collaboration/issues/351#issuecomment-2378986168) 
 * add [script to modify livy client code](./hack-livyclient.sh)
 * add [script to package requirements.txt into tar file and upload to S3](./tar-pip.sh)
 
-For [Dockerfile.jupyterlab-3.1.0-cpu-with-q](./Dockerfile.jupyterlab-3.1.0-cpu-with-q)
-* using python 3.11 instead of default 3.9
+For [Dockerfile.jupyterlab-3.1.0-cpu-with-q](./Dockerfile.jupyterlab-3.1.0-cpu-with-q): 
+* extend `public.ecr.aws/sagemaker/sagemaker-distribution:3.1.0-cpu` 
 * install Amazon Q Developer CLI
 
 
