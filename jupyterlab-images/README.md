@@ -1,12 +1,33 @@
-## About this image
-What I would like to achieve here:
-* extend the latest sagemaker jupyterlab image
+## Context
+
+In this section, we would like to create custom image that we will use in Sagemaker JupyterLab space
+
+For [Dockerfile.jupyterlab-2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu)
+* extend specific sagemaker jupyterlab image
 * update libraries `jupyter-collaboration==3.0.0 jupyter_ydoc==3.0.0` in attempt to fix [this issue](https://github.com/jupyterlab/jupyter-collaboration/issues/351#issuecomment-2378986168) 
 * add [script to modify livy client code](./hack-livyclient.sh)
 * add [script to package requirements.txt into tar file and upload to S3](./tar-pip.sh)
 
+For [Dockerfile.jupyterlab-3.1.0-cpu-with-q](./Dockerfile.jupyterlab-3.1.0-cpu-with-q)
+* using python 3.11 instead of default 3.9
+* install Amazon Q Developer CLI
 
-### Build image
+
+## Setup
+
+The following steps are for [Dockerfile.jupyterlab-3.1.0-cpu-with-q](./Dockerfile.jupyterlab-3.1.0-cpu-with-q). However, you can change the env var to build [Dockerfile.jupyterlab-2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu) accordingly.
+
+### Prerequisite
+
+* x86-based machine with the following installed
+    * `docker`
+    * `AWS CLI` (configured properly)
+    * `jq` for json manipulation
+* Make sure to add IAM permissions to list the sagemaker images to the role. Please refer to
+    * [this docs](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl-provide-users-with-images.html) to use custom image in Sagemaker domain
+    * [this cli command](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sagemaker/update-domain.html) to update Sagemaker domain via CLI
+
+### Building Image
 
 ```bash
 export REPO_NAME=sagemaker/sagemaker-distribution
@@ -24,18 +45,16 @@ docker build -f Dockerfile.jupyterlab-$IMG_TAG -t $image_uri .
 docker run --rm -it --entrypoint /bin/bash $image_uri
 ```
 
-### Using the image in Sagemaker
-
-Please refer to
-* [this docs](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl-provide-users-with-images.html) to use custom image in Sagemaker domain
-* [this cli command](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sagemaker/update-domain.html) to update Sagemaker domain via CLI
-
-Make sure to add IAM permissions to list the sagemaker images to the role.
+### Push Image to ECR
 ```bash
 # push image to your ECR
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPO_URI
 docker push $image_uri
+```
 
+### Using the image in Sagemaker
+
+```bash
 # create Sagemaker app image config
 aws sagemaker create-app-image-config --app-image-config-name default-jupyterlab --jupyter-lab-app-image-config {}
 app_image_config_arn=$(aws sagemaker describe-app-image-config --app-image-config-name default-jupyterlab | jq -r .AppImageConfigArn)
@@ -71,7 +90,10 @@ With above setup, you should be able to see this custom image in drop down selec
 ![set-jupyterlab-image](../imgs/jupyterlab-img-01-set-in-space.jpg)
 
 
-If you are using custom image from [2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu),
+If you are using image from [Dockerfile.jupyterlab-2.1.0-cpu](./Dockerfile.jupyterlab-2.1.0-cpu)
 * You can then use the [tar-pip.sh](./tar-pip.sh) from terminal or kernel.
 * Example of generating tar file from `test.txt` which contains python requirements.
 ![tar-pip](../imgs/jupyterlab-img-02-tar-pip-01.jpg)
+
+If you are using image from [Dockerfile.jupyterlab-3.1.0-cpu-with-q](./Dockerfile.jupyterlab-3.1.0-cpu-with-q), you should be able to use Q CLI
+![q-cli-in-sagemaker-jupyterlab](../imgs/q-cli-in-jupyterlab.jpg)
